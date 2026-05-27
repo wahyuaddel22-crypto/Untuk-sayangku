@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive to Your Heart</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #0b132b, #1c2541);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* --- Section Wrapper --- */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(28, 37, 65, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid #48cae4;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Welcome Screen --- */
+        h1 { color: #48cae4; margin-bottom: 10px; font-size: 2rem; }
+        p.subtitle { color: #a5a5a5; margin-bottom: 30px; }
+        
+        .car-illustration {
+            font-size: 80px;
+            margin: 20px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .btn {
+            background: #48cae4;
+            color: #0b132b;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(72, 202, 228, 0.4);
+        }
+        .btn:hover {
+            background: #00b4d8;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 180, 216, 0.7);
+        }
+
+        /* --- Mini Game Screen --- */
+        #game-canvas-area {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #48cae4;
+            margin-bottom: 20px;
+        }
+
+        .road-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: dashed #fff;
+            top: 50%;
+            animation: drive 1s linear infinite;
+        }
+
+        #player-car {
+            position: absolute;
+            font-size: 40px;
+            left: 20px;
+            bottom: 40px;
+            transition: bottom 0.1s ease;
+        }
+
+        .item {
+            position: absolute;
+            font-size: 30px;
+            right: -50px;
+        }
+
+        #score-board {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #48cae4;
+        }
+
+        /* --- Letter Screen --- */
+        .letter-box {
+            background: #fff;
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            white-space: pre-line;
+            border-left: 5px solid #ff4d6d;
+        }
+
+        .letter-box b { color: #ff4d6d; }
+        .decorations { font-size: 1.5rem; margin-top: 15px; text-align: center; }
+
+        /* Custom Scrollbar for Letter */
+        .letter-box::-webkit-scrollbar { width: 6px; }
+        .letter-box::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .letter-box::-webkit-scrollbar-thumb { background: #ff4d6d; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. WELCOME SCREEN -->
+    <div id="welcome-screen" class="container">
+        <h1>Drive to Your Heart 🏎️✨</h1>
+        <p class="subtitle">Sebuah perjalanan kecil menuju hari spesialmu.</p>
+        <div class="car-illustration">🏎️💨</div>
+        <p style="margin-bottom: 25px; color: #e0e0e0;">Nyalakan mesin dan kumpulkan 3 "Bensin Cinta" di jalan untuk membuka kejutan!</p>
+        <button class="btn" onclick="startGame()">Start Engine 🔑</button>
+    </div>
+
+    <!-- 2. GAME SCREEN -->
+    <div id="game-screen" class="container hidden">
+        <h1>Kumpulkan Fuel Cinta! ❤️</h1>
+        <p class="subtitle">Klik tombol "Lompat" untuk menghindari jalan rusak dan ambil Love Fuel!</p>
+        <div id="score-board">Fuel Terkumpul: <span id="score">0</span> / 3</div>
+        
+        <div id="game-canvas-area">
+            <div class="road-line"></div>
+            <div id="player-car">🏎️</div>
+            <div id="game-item" class="item">❤️</div>
+        </div>
+
+        <button class="btn" onclick="jumpCar()">LOMPAT! ⬆️</button>
+    </div>
+
+    <!-- 3. LETTER SCREEN -->
+    <div id="letter-screen" class="container hidden">
+        <h1 style="color: #ff4d6d;">For You, Sayang ❤️</h1>
+        <p class="subtitle" style="margin-bottom: 15px;">Perjalanan sampai! Ini pesan tulus dari lubuk hatiku:</p>
+        
+        <div class="letter-box" id="typing-letter"></div>
+        
+        <div class="decorations">🏎️ ❤️ 🥟 🏎️</div>
+    </div>
+
+    <script>
+        // --- Game Logic ---
+        let score = 0;
+        let isJumping = false;
+        let gameInterval;
+        let itemTimeout;
+        const playerCar = document.getElementById('player-car');
+        const gameItem = document.getElementById('game-item');
+        
+        // Surat cinta dari user
+        const loveLetterText = `Terima kasih yaaa uda jadi teman baik aku yang sabarnya ngelebihin diriku, nemenin aku di keadaan apa pun. Kamu itu orang yang bahkan saat aku lagi capek, lagi nggak jelas, atau lagi moody an, kamu tetap ada. 
+
+<b>Nanda said:</b> ”Sayang coba cerita dulu”, ”jangan ditutup telp nya, coba jelasin pelan pelan”, ”kalo ngga mau cium biasanya ada apa apa ni”. 
+
+Padahal akhirnya juga kamu aku punggungin kalau ngga gini, <b>Addel said:</b> ”ngga mau cerita, kasih aku waktu sendiri”. Sedetail itu kamu memperhatikan perubahan diriku kalo lagi ngambek, happy, clingy. Tapiiiiiiiiiii, sayangnya aku ke kamu karena kamu tetap berusaha ngerti akuu.
+
+Terima kasih yaa karena kehadiran kamu sering jadi alasan aku bisa senyum di hari hari yang macam ntut. Kamu mungkin nggak sadar, tapi hal-hal kecil dari kamu itu berarti banget buat aku. Terima kasih sudah nerima aku apa adanya, dengan semua kurang dan lebihku, tanpa bikin aku merasa harus jadi orang lain dulu.
+
+Aku juga mau jujur… kadang aku pengen kamu pergi, tapi di sisi lain aku juga nggak mau kamu pergi. Aneh ya? Tapi emang sesimpel itu rasanya. Kalau suatu hari mau ninggalin aku, bilang ya, jangan tiba-tiba pergi. Aku cuma pengen kamu tetap ada di sampingku, selain Allah, begitu juga aku akan berusaha tetap ada buat kamu, sekuat yang aku bisa. Walaupun nanti pasti ada capeknya, ada ngeluhnya, tapi aku akan tetap berusaha.
+
+Buat aku, kamu itu bukan sekadar teman biasa. Kamu salah satu orang paling berharga yang pernah aku temuin. Semoga di umur kamu yang baru ini, kamu selalu diberi kesehatan, hati yang tenang, kebahagiaan yang nggak putus putus, rezeki yang lancar biar bisa beliin aku blar blar ama dimcum serta hidup yang selalu dalam keberkahan.
+
+Dan semoga kita tetap bertahan, tetap saling ngerti, tetap hangat walau kadang sama sama keras kepala. Kalau nanti kita ribut, ya wajar… tapi jangan buat aku lama-lama mayahhh, nanti aku keburu minta dibeliin dimsum lagiii. Jangan capek ngebujuk aku yaa sayangnyaa akuuuuuuuuuuuuuuu. 
+
+<b>SEKALI LAGI, CELAMAT UYANG TAHYUNNNNNN, MUAHHHHHH! 🎂❤️✨</b>`;
+
+        function startGame() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            spawnItem();
+        }
+
+        function jumpCar() {
+            if (isJumping) return;
+            isJumping = true;
+            playerCar.style.bottom = '120px'; // Efek melompat naik
+            
+            setTimeout(() => {
+                playerCar.style.bottom = '40px'; // Kembali turun
+                isJumping = false;
+            }, 500);
+        }
+
+        function spawnItem() {
+            let itemPos = 600;
+            const items = ['❤️', '🕳️', '❤️']; // Kombinasi hati dan rintangan lubang jalan
+            let currentItemType = items[Math.floor(Math.random() * items.length)];
+            gameItem.innerHTML = currentItemType;
+            gameItem.style.bottom = currentItemType === '❤️' ? '110px' : '40px'; // Set tinggi objek
+
+            gameInterval = setInterval(() => {
+                itemPos -= 8;
+                gameItem.style.right = (600 - itemPos) + 'px';
+
+                // Deteksi Tabrakan Sederhana
+                if (itemPos > 40 && itemPos < 90) {
+                    if (currentItemType === '❤️' && isJumping) {
+                        // Dapat poin kalau melompat mengambil hati
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        clearInterval(gameInterval);
+                        checkScore();
+                    } else if (currentItemType === '🕳️' && !isJumping) {
+                        // Terkena lubang jika tidak melompat
+                        alert("Aww! Mobilnya nabrak lubang. Tetap semangat, dicoba lagi yuk!");
+                        clearInterval(gameInterval);
+                        spawnItem();
+                    }
+                }
+
+                if (itemPos < 0) {
+                    clearInterval(gameInterval);
+                    spawnItem();
+                }
+            }, 20);
+        }
+
+        function checkScore() {
+            if (score >= 3) {
+                clearInterval(gameInterval);
+                clearTimeout(itemTimeout);
+                showLetter();
+            } else {
+                spawnItem();
+            }
+        }
+
+        function showLetter() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('letter-screen').classList.remove('hidden');
+            
+            // Efek mengetik surat otomatis
+            let i = 0;
+            const letterBox = document.getElementById('typing-letter');
+            
+            // Untuk merender HTML tag seperti <b> dengan benar saat efek mengetik, 
+            // kita langsung masukkan teks utuh menggunakan innerHTML secara bertahap
+            letterBox.innerHTML = loveLetterText;
+        }
+    </script>
+</body>
+</html>
